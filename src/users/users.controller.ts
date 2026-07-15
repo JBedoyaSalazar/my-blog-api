@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import { validationEmail } from '../libs/ulities';
+import { Body, Controller, Delete, Get, Param, Patch, Post, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { validationEmail } from '../libs/utilities';
 
 interface User {
   id: number;
@@ -33,13 +33,16 @@ export class UsersController {
   }
 
   @Get(':id')
-  getUserById(@Param('id') id: number): User | { error: string } {
+  getUserById(@Param('id') id: number): User {
     const user = this.users.find((user) => user.id === parseInt(id.toString()));
     if (!user) {
-      return {
-        error: `User with id ${id} not found`,
-      };
+      throw new NotFoundException(`User with id ${id} not found`);
     }
+
+    if (user.id === 1) {
+      throw new UnauthorizedException('Access to this user is restricted');
+    }
+
     return user;
   }
 
@@ -62,12 +65,10 @@ export class UsersController {
   }
 
   @Patch(':id')
-  updateUser(@Param('id') id: number, @Body() changes: Partial<Omit<User, 'id'>>): User | { error: string } {
+  updateUser(@Param('id') id: number, @Body() changes: Partial<Omit<User, 'id'>>): User {
     const userIndex = this.users.findIndex((user) => user.id === parseInt(id.toString()));
     if (userIndex === -1) {
-      return {
-        error: `User with id ${id} not found`,
-      };
+      throw new NotFoundException(`User with id ${id} not found`);
     }
 
     if (changes.email !== undefined) {
@@ -84,12 +85,10 @@ export class UsersController {
   }
 
   @Delete(':id')
-  deleteUser(@Param('id') id: number): { message: string } | { error: string } {
+  deleteUser(@Param('id') id: number): { message: string } {
     const userIndex = this.users.findIndex((user) => user.id === parseInt(id.toString()));
     if (userIndex === -1) {
-      return {
-        error: `User with id ${id} not found`,
-      };
+      throw new NotFoundException(`User with id ${id} not found`);
     }
     this.users.splice(userIndex, 1);
     return {
