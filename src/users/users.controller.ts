@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { validationEmail } from '../libs/utilities';
+import { Body, Controller, Delete, Get, Param, Patch, Post, NotFoundException } from '@nestjs/common';
+import { CreateUserDto, UpdateUserDto } from './user.dto';
 
 interface User {
   id: number;
@@ -39,25 +39,15 @@ export class UsersController {
       throw new NotFoundException(`User with id ${id} not found`);
     }
 
-    if (user.id === 1) {
-      throw new UnauthorizedException('Access to this user is restricted');
-    }
-
     return user;
   }
 
   @Post()
-  createUser(@Body() { name, email }: Omit<User, 'id'>): User {
-    if (name.trim() === '' || email.trim() === '') {
-      throw new Error('Name and email cannot be empty');
-    }
-
-    validationEmail(email);
-
+  createUser(@Body() { name, email }: CreateUserDto): User {
     const newUser: User = {
       id: this.users.length + 1,
-      name,
-      email,
+      name: name,
+      email: email,
     };
 
     this.users.push(newUser);
@@ -65,14 +55,10 @@ export class UsersController {
   }
 
   @Patch(':id')
-  updateUser(@Param('id') id: number, @Body() changes: Partial<Omit<User, 'id'>>): User {
+  updateUser(@Param('id') id: number, @Body() changes: UpdateUserDto): User {
     const userIndex = this.users.findIndex((user) => user.id === parseInt(id.toString()));
     if (userIndex === -1) {
       throw new NotFoundException(`User with id ${id} not found`);
-    }
-
-    if (changes.email !== undefined) {
-      validationEmail(changes.email);
     }
 
     const updatedUser: User = {
