@@ -3,14 +3,12 @@ import { IsString, IsEmail, IsNotEmpty } from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateUserDto {
-  @Transform(({ value }) => value.trim())
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @IsNotEmpty()
   name!: string;
 
-  @Transform(({ value }) => value.trim())
   @IsEmail()
-  @IsNotEmpty()
   email!: string;
 }
 
