@@ -1,72 +1,61 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { User } from './user.model';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto, UpdateUserDto } from './user.dto';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
-  private users: User[] = [
-    {
-      id: 1,
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-    },
-    {
-      id: 2,
-      name: 'Jane Smith',
-      email: 'jane.smith@example.com',
-    },
-    {
-      id: 3,
-      name: 'Bob Johnson',
-      email: 'bob.johnson@example.com',
-    },
-  ];
+  constructor(
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
+  ) {}
 
-  private userIndex(id: number): number {
-    const userIndex = this.users.findIndex((user) => user.id === id);
+  private async userById(id: number): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ id });
 
-    if (userIndex === -1) {
+    if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
 
-    return userIndex;
+    return user;
   }
 
-  findAllUsers(): User[] {
-    return this.users;
+  async findAllUsers(): Promise<User[]> {
+    const users = await this.usersRepository.find();
+    return users;
   }
 
-  findOneUser(id: number): User {
-    const userIndex = this.userIndex(id);
-    return this.users[userIndex];
+  async findOneUser(id: number): Promise<User> {
+    const user = await this.userById(id);
+
+    if (user.id === 1) {
+      throw new ForbiddenException(`User with id ${id} is forbidden to be accessed`);
+    }
+
+    return user;
   }
 
-  createUser({ name, email }: CreateUserDto): User {
-    const newUser: User = {
-      id: this.users.length + 1,
-      name: name,
-      email: email,
-    };
-
-    this.users.push(newUser);
-    return newUser;
+  async createUser(body: CreateUserDto): Promise<User> {
+    try {
+      const newUser: User = await this.usersRepository.save(body);
+      return newUser;
+    } catch {
+      throw new ForbiddenException(`Error creating user`);
+    }
   }
 
-  updateUser(id: number, changes: UpdateUserDto): User {
-    const userIndex = this.userIndex(id);
+  async updateUser(id: number, changes: UpdateUserDto): Promise<User> {
+    const user = await this.userById(id);
 
-    this.users[userIndex] = {
-      ...this.users[userIndex],
-      ...changes,
-    };
-
-    return this.users[userIndex];
+    const updatedUser = this.usersRepository.merge(user, changes);
+    return await this.usersRepository.save(updatedUser);
   }
 
-  deleteUser(id: number): { message: string } {
-    const userIndex = this.userIndex(id);
+  async deleteUser(id: number): Promise<{ message: string }> {
+    const user = await this.userById(id);
 
-    this.users.splice(userIndex, 1);
+    await this.usersRepository.remove(user);
     return {
       message: `User with id ${id} deleted successfully`,
     };

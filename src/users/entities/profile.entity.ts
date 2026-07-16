@@ -8,10 +8,10 @@ export class Profile {
   @Column({ type: 'varchar', length: 255 })
   name!: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  apellido!: string;
+  @Column({ type: 'varchar', length: 255, name: 'last_name' })
+  lastName!: string;
 
-  @Column({ type: 'varchar', length: 300 })
+  @Column({ type: 'varchar', length: 300, nullable: true })
   avatar!: string;
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
