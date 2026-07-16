@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDto, UpdateUserDto } from './user.dto';
+import { CreateUserDto, UpdateUserDto } from './DTO/user.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
@@ -12,7 +12,12 @@ export class UsersService {
   ) {}
 
   private async userById(id: number): Promise<User> {
-    const user = await this.usersRepository.findOneBy({ id });
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: {
+        profile: true,
+      },
+    });
 
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
@@ -22,8 +27,17 @@ export class UsersService {
   }
 
   async findAllUsers(): Promise<User[]> {
-    const users = await this.usersRepository.find();
+    const users = await this.usersRepository.find({
+      relations: {
+        profile: true,
+      },
+    });
     return users;
+  }
+
+  async getProfileByUserId(id: number): Promise<User> {
+    const user = await this.userById(id);
+    return user;
   }
 
   async findOneUser(id: number): Promise<User> {
@@ -46,18 +60,28 @@ export class UsersService {
   }
 
   async updateUser(id: number, changes: UpdateUserDto): Promise<User> {
-    const user = await this.userById(id);
+    try {
+      const user = await this.userById(id);
 
-    const updatedUser = this.usersRepository.merge(user, changes);
-    return await this.usersRepository.save(updatedUser);
+      const updatedUser = this.usersRepository.merge(user, changes);
+      const savedUser = await this.usersRepository.save(updatedUser);
+
+      return savedUser;
+    } catch (error) {
+      console.log(error);
+      throw new ForbiddenException(`Error updating user`);
+    }
   }
 
   async deleteUser(id: number): Promise<{ message: string }> {
-    const user = await this.userById(id);
-
-    await this.usersRepository.remove(user);
-    return {
-      message: `User with id ${id} deleted successfully`,
-    };
+    try {
+      await this.usersRepository.remove(await this.userById(id));
+      return {
+        message: `User with id ${id} deleted successfully`,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new ForbiddenException(`Error deleting user`);
+    }
   }
 }
