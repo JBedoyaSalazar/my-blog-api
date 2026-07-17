@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreatePostDto {
   @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
@@ -27,4 +27,8 @@ export class CreatePostDto {
   @IsBoolean()
   @IsOptional()
   isDraft?: boolean;
+
+  @IsNumber()
+  @IsNotEmpty()
+  userId!: number;
 }

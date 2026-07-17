@@ -15,6 +15,11 @@ export class PostsService {
   private async postById(id: number): Promise<Post> {
     const post = await this.postsRepository.findOne({
       where: { id },
+      relations: {
+        user: {
+          profile: true,
+        },
+      },
     });
 
     if (!post) {
@@ -26,8 +31,11 @@ export class PostsService {
 
   async create(body: CreatePostDto): Promise<Post> {
     try {
-      const newPost = await this.postsRepository.save(body);
-      return newPost;
+      const newPost = await this.postsRepository.save({
+        ...body,
+        user: { id: body.userId },
+      });
+      return await this.postById(newPost.id);
     } catch (error) {
       console.error(error);
       throw new ForbiddenException('Error creating post');
@@ -35,12 +43,18 @@ export class PostsService {
   }
 
   async findAll(): Promise<Post[]> {
-    const posts  = await this.postsRepository.find()
+    const posts = await this.postsRepository.find({
+      relations: {
+        user: {
+          profile: true,
+        },
+      },
+    });
     return posts;
   }
 
   async findOne(id: number): Promise<Post> {
-    const post = await this.postById(id)
+    const post = await this.postById(id);
     return post;
   }
 
