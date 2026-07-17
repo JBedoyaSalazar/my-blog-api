@@ -2,14 +2,20 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Post } from '../entities/post.entity';
+import { UsersService } from '../../users/services/users.service';
+import { Category } from '../entities/category.entity';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(Post)
     private readonly postsRepository: Repository<Post>,
+    private readonly usersService: UsersService,
+
+    @InjectRepository(Category)
+    private readonly CategoriesRepository: Repository<Category>,
   ) {}
 
   private async postById(id: number): Promise<Post> {
@@ -19,6 +25,7 @@ export class PostsService {
         user: {
           profile: true,
         },
+        categories: true,
       },
     });
 
@@ -34,6 +41,7 @@ export class PostsService {
       const newPost = await this.postsRepository.save({
         ...body,
         user: { id: body.userId },
+        categories: body.categoryIds?.map((id) => ({ id })) || [],
       });
       return await this.postById(newPost.id);
     } catch (error) {
@@ -48,6 +56,7 @@ export class PostsService {
         user: {
           profile: true,
         },
+        categories: true,
       },
     });
     return posts;
@@ -61,9 +70,28 @@ export class PostsService {
   async update(id: number, changes: UpdatePostDto): Promise<Post> {
     try {
       const post = await this.postById(id);
-      const updatedPost = this.postsRepository.merge(post, changes);
-      const savedPost = await this.postsRepository.save(updatedPost);
-      return savedPost;
+
+      if (changes.userId) {
+        post.user = await this.usersService.findOneUser(changes.userId);
+      }
+
+      if (changes.categoryIds) {
+        post.categories = await this.CategoriesRepository.find({
+          where: {
+            id: In(changes.categoryIds),
+          },
+        });
+      }
+
+      this.postsRepository.merge(post, {
+        title: changes.title,
+        content: changes.content,
+        summary: changes.summary,
+        coverImage: changes.coverImage,
+        isDraft: changes.isDraft,
+      });
+
+      return this.postsRepository.save(post);
     } catch (error) {
       console.error(error);
       throw new ForbiddenException('Error updating post');

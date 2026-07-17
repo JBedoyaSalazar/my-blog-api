@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreatePostDto {
   @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
@@ -31,4 +31,10 @@ export class CreatePostDto {
   @IsNumber()
   @IsNotEmpty()
   userId!: number;
+
+  @IsArray()
+  @IsOptional()
+  @IsNumber({}, { each: true })
+  @ArrayMaxSize(5)
+  categoryIds?: number[];
 }
