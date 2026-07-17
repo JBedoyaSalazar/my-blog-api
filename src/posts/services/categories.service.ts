@@ -15,9 +15,6 @@ export class CategoriesService {
   private async categoryById(id: number): Promise<Category> {
     const category = await this.categoriesRepository.findOne({
       where: { id },
-      relations: {
-        posts: true,
-      },
     });
 
     if (!category) {

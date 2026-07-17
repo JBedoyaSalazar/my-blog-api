@@ -109,4 +109,16 @@ export class PostsService {
       throw new ForbiddenException('Error deleting post');
     }
   }
+
+  async findPostsByCategory(categoryId: number): Promise<Post[]> {
+    const posts = await this.postsRepository.find({
+      where: { categories: { id: categoryId } },
+      relations: {
+        user: {
+          profile: true,
+        },
+      },
+    });
+    return posts;
+  }
 }

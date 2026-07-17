@@ -3,6 +3,8 @@ import { CreateUserDto, UpdateUserDto } from '../dto/user.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
+import { Post } from '../../posts/entities/post.entity';
+import { Profile } from '../entities/profile.entity';
 
 @Injectable()
 export class UsersService {
@@ -16,7 +18,6 @@ export class UsersService {
       where: { id },
       relations: {
         profile: true,
-        posts: true,
       },
     });
 
@@ -36,14 +37,24 @@ export class UsersService {
     return users;
   }
 
-  async getProfileByUserId(id: number): Promise<User> {
+  async getProfileByUserId(id: number): Promise<Profile> {
     const user = await this.userById(id);
-    return user;
+    return user.profile;
   }
 
-  async getPostsByUserId(id: number): Promise<User> {
-    const user = await this.userById(id);
-    return user;
+  async getPostsByUserId(id: number): Promise<Post[]> {
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: {
+        posts: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+
+    return user.posts;
   }
 
   async findOneUser(id: number): Promise<User> {
