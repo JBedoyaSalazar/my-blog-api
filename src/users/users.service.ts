@@ -16,6 +16,7 @@ export class UsersService {
       where: { id },
       relations: {
         profile: true,
+        posts: true,
       },
     });
 
@@ -36,6 +37,11 @@ export class UsersService {
   }
 
   async getProfileByUserId(id: number): Promise<User> {
+    const user = await this.userById(id);
+    return user;
+  }
+
+  async getPostsByUserId(id: number): Promise<User> {
     const user = await this.userById(id);
     return user;
   }

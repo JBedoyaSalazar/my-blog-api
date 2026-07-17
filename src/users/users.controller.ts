@@ -21,6 +21,11 @@ export class UsersController {
     return this.usersService.getProfileByUserId(id);
   }
 
+  @Get(':id/posts')
+  getPostsByUserId(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getPostsByUserId(id);
+  }
+
   @Post()
   createUser(@Body() userData: CreateUserDto) {
     return this.usersService.createUser(userData);
