@@ -69,8 +69,9 @@ export class UsersService {
 
   async createUser(body: CreateUserDto): Promise<User> {
     try {
-      const newUser: User = await this.usersRepository.save(body);
-      return newUser;
+      const newUser: User = this.usersRepository.create(body);
+      await this.usersRepository.save(newUser);
+      return this.findOneUser(newUser.id);
     } catch {
       throw new ForbiddenException(`Error creating user`);
     }
