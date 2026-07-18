@@ -9,6 +9,12 @@ export class Category {
   @Column({ type: 'varchar', length: 100, unique: true, nullable: false })
   name!: string;
 
+  @Column({ type: 'varchar', length: 800, nullable: true })
+  description!: string;
+
+  @Column({ type: 'varchar', length: 800, name: 'cover_image', nullable: true })
+  coverImage!: string;
+
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP', name: 'created_at' })
   createdAt!: Date;
 

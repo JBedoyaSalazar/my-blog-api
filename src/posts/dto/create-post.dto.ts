@@ -15,7 +15,7 @@ export class CreatePostDto {
   @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @IsOptional()
-  @MaxLength(255)
+  @MaxLength(800)
   coverImage!: string;
 
   @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
