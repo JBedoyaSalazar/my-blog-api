@@ -67,6 +67,13 @@ export class UsersService {
     return user;
   }
 
+  async findByEmail(email: string): Promise<User | null> {
+    return await this.usersRepository.findOne({
+      where: { email },
+      relations: { profile: true },
+    });
+  }
+
   async createUser(body: CreateUserDto): Promise<User> {
     try {
       const newUser: User = this.usersRepository.create(body);
