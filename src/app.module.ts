@@ -23,7 +23,7 @@ import { PostsModule } from './posts/posts.module';
         database: configService.get('DB_NAME', { infer: true }),
 
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize: false,
       }),
     }),
     UsersModule,
