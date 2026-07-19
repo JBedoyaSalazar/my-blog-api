@@ -8,7 +8,6 @@ export class CreateCategoryDto {
   @MaxLength(100)
   name!: string;
 
-
   @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @IsOptional()
