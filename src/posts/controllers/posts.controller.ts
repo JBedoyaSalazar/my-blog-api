@@ -1,8 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, Req } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import type { Request } from 'express';
+
 import { PostsService } from '../services/posts.service';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
+import { Payload } from '../../auth/models/payload.model';
 
 
 @Controller('posts')
@@ -11,8 +14,10 @@ export class PostsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post()
-  create(@Body() createPostDto: CreatePostDto) {
-    return this.postsService.create(createPostDto);
+  create(@Body() createPostDto: CreatePostDto, @Req() req: Request) {
+    const payload = req.user as Payload
+    const userId = payload.sub
+    return this.postsService.create(createPostDto, userId);
   }
 
   @Get()
@@ -27,8 +32,10 @@ export class PostsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() changes: UpdatePostDto) {
-    return this.postsService.update(id, changes);
+  update(@Param('id', ParseIntPipe) id: number, @Body() changes: UpdatePostDto, @Req() req: Request) {
+    const payload = req.user as Payload
+    const userId = payload.sub
+    return this.postsService.update(id, changes, userId);
   }
 
   @UseGuards(AuthGuard('jwt'))

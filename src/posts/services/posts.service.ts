@@ -36,11 +36,11 @@ export class PostsService {
     return post;
   }
 
-  async create(body: CreatePostDto): Promise<Post> {
+  async create(body: CreatePostDto, userId: number): Promise<Post> {
     try {
       const newPost = await this.postsRepository.save({
         ...body,
-        user: { id: body.userId },
+        user: { id: userId },
         categories: body.categoryIds?.map((id) => ({ id })) || [],
       });
       return await this.postById(newPost.id);
@@ -67,12 +67,12 @@ export class PostsService {
     return post;
   }
 
-  async update(id: number, changes: UpdatePostDto): Promise<Post> {
+  async update(id: number, changes: UpdatePostDto, userId: number): Promise<Post> {
     try {
       const post = await this.postById(id);
 
-      if (changes.userId) {
-        post.user = await this.usersService.findOneUser(changes.userId);
+      if (userId) {
+        post.user = await this.usersService.findOneUser(userId);
       }
 
       if (changes.categoryIds) {
