@@ -1,3 +1,5 @@
+import { SignOptions } from 'jsonwebtoken';
+
 export interface Env {
   APP_NAME: string;
   DB_HOST: string;
@@ -5,5 +7,9 @@ export interface Env {
   DB_USERNAME: string;
   DB_PASSWORD: string;
   DB_NAME: string;
-  ENCRYPT_SALT: number
+  
+  ENCRYPT_SALT: number;
+
+  JWT_SECRET: string;
+  JWT_EXPIRES_IN: SignOptions['expiresIn'];
 }

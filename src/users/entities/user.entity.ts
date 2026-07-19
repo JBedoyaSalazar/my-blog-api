@@ -32,6 +32,6 @@ export class User {
 
   @BeforeInsert()
   async hashPassword() {
-    this.password = await bcrypt.hash(this.password, Number(process.env.ENCRYP_SALT));
+    this.password = await bcrypt.hash(this.password, 10);
   }
 }
