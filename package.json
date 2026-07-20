@@ -41,6 +41,7 @@
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
+    "helmet": "^8.3.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
@@ -99,5 +100,8 @@
     "bcrypt@6.0.0": true,
     "@google/genai@2.12.0": true,
     "protobufjs@7.6.5": true
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
