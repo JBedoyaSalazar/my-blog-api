@@ -12,4 +12,6 @@ export interface Env {
 
   JWT_SECRET: string;
   JWT_EXPIRES_IN: SignOptions['expiresIn'];
+
+  GEMINI_KEY: string;
 }

@@ -7,6 +7,7 @@ import { PostsModule } from './posts/posts.module';
 import { AuthModule } from './auth/auth.module';
 
 import { databaseConfig } from './config/database.config';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { databaseConfig } from './config/database.config';
     UsersModule,
     PostsModule,
     AuthModule,
+    AiModule,
   ],
 })
 export class AppModule {}

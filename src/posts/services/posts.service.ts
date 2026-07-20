@@ -1,10 +1,11 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Post } from '../entities/post.entity';
 import { UsersService } from '../../users/services/users.service';
+import { AiService } from '../../ai/services/ai.service';
 import { Category } from '../entities/category.entity';
 
 @Injectable()
@@ -13,9 +14,9 @@ export class PostsService {
     @InjectRepository(Post)
     private readonly postsRepository: Repository<Post>,
     private readonly usersService: UsersService,
-
     @InjectRepository(Category)
     private readonly CategoriesRepository: Repository<Category>,
+    private readonly aiService: AiService,
   ) {}
 
   private async postById(id: number): Promise<Post> {
@@ -71,6 +72,10 @@ export class PostsService {
     try {
       const post = await this.postById(id);
 
+      if (userId !== post.user.id) {
+        throw new ForbiddenException('You are not the owner of this post');
+      }
+
       if (userId) {
         post.user = await this.usersService.findOneUser(userId);
       }
@@ -120,5 +125,42 @@ export class PostsService {
       },
     });
     return posts;
+  }
+
+  async publish(id: number, userId: number) {
+    try {
+      const post = await this.postById(id);
+
+      if (userId !== post.user.id) {
+        throw new ForbiddenException('You are not the owner of this post');
+      }
+
+      if (!post.content || !post.title || post.categories.length <= 0) {
+        throw new BadRequestException('Post must have content, title and at least one category to be published');
+      }
+
+      const summary = await this.aiService.generateSummary(post.content);
+      if (!summary) {
+        throw new BadRequestException('Error generating summary');
+      }
+
+      const image = await this.aiService.generateImageUrl(summary);
+      if (!image) {
+        throw new BadRequestException('Error generating image');
+      }
+
+      const publishedPost = await this.postsRepository.merge(post, {
+        isDraft: false,
+        summary,
+        coverImage: image,
+      });
+
+      const updatedPost = await this.postsRepository.save(publishedPost)
+
+      return this.findOne(updatedPost.id);
+    } catch (error) {
+      console.error(error);
+      throw new ForbiddenException('Error publishing post');
+    }
   }
 }
