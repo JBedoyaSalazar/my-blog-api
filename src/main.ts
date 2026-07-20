@@ -1,5 +1,6 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -14,6 +15,12 @@ async function bootstrap() {
       },
     }),
   );
+
+  const config = new DocumentBuilder().setTitle('Blog API').setDescription('The Blog API description').setVersion('1.0').addTag('blog').build();
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app, documentFactory, {
+    jsonDocumentUrl: 'swagger/json',
+  });
 
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   await app.listen(process.env.PORT ?? 3000);
