@@ -7,6 +7,8 @@ export interface Env {
   DB_USERNAME: string;
   DB_PASSWORD: string;
   DB_NAME: string;
+  DATABASE_URL?: string;
+  NODE_ENV: 'development' | 'production';
 
   ENCRYPT_SALT: number;
 
